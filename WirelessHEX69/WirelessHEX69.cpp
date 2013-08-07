@@ -96,16 +96,19 @@ boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolea
           if (radio.DATA[index++] != ':') return false;
           now = millis(); //got "good" packet
 
-          if (tmp==seq)
+          if (tmp==seq || tmp==seq-1) // if {temp==seq : new packet}, {temp==seq-1 : ACK was lost, host resending previously saved packet so must only resend the ACK}
           {
-            for(byte i=index;i<dataLen;i++)
-              flash.writeByte(bytesFlashed++, radio.DATA[i]);
+            if (tmp==seq)
+            {
+              seq++;
+              for(byte i=index;i<dataLen;i++)
+                flash.writeByte(bytesFlashed++, radio.DATA[i]);
+            }
 
             //send ACK
             tmp = sprintf(buffer, "FLX:%u:OK", tmp);
             if (DEBUG) Serial.println((char*)buffer);
             radio.sendACK(buffer, tmp);
-            seq++;
           }
         }
 
