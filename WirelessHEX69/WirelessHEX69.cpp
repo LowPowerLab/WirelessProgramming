@@ -75,7 +75,6 @@ boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolea
           //read packet SEQ
           for (byte i = 4; i<8; i++) //up to 4 characters for seq number
           {
-            index++;
             if (radio.DATA[i] >=48 && radio.DATA[i]<=57)
               tmp = tmp*10+radio.DATA[i]-48;
             else if (radio.DATA[i]==':')
@@ -84,6 +83,7 @@ boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolea
                 return false;
               else break;
             }
+            index++;
           }
 
           if (DEBUG) {
@@ -93,7 +93,7 @@ boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolea
             PrintHex83((byte*)radio.DATA, dataLen);
           }
 
-          if (radio.DATA[index++] != ':') return false;
+          if (radio.DATA[++index] != ':') return false;
           now = millis(); //got "good" packet
 
           if (tmp==seq || tmp==seq-1) // if {temp==seq : new packet}, {temp==seq-1 : ACK was lost, host resending previously saved packet so must only resend the ACK}
@@ -223,7 +223,6 @@ boolean HandleSerialHEXData(RFM69 radio, byte targetID, uint16_t TIMEOUT, uint16
           byte index = 3;
           for (byte i = 4; i<8; i++) //up to 4 characters for seq number
           {
-            index++;
             if (input[i] >=48 && input[i]<=57)
               tmp = tmp*10+input[i]-48;
             else if (input[i]==':')
@@ -232,9 +231,10 @@ boolean HandleSerialHEXData(RFM69 radio, byte targetID, uint16_t TIMEOUT, uint16
                 return false;
               else break;
             }
+            index++;
           }
           //Serial.print("input[index] = ");Serial.print("[");Serial.print(index);Serial.print("]=");Serial.println(input[index]);
-          if (input[index++] != ':') return false;
+          if (input[++index] != ':') return false;
           now = millis(); //got good packet
           
           byte hexDataLen = validateHEXData(input+index, inputLen-index);

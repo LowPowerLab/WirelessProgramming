@@ -76,7 +76,6 @@ boolean HandleWirelessHEXData(RFM12B radio, byte remoteID, SPIFlash flash, boole
           //read packet SEQ
           for (byte i = 4; i<8; i++) //up to 4 characters for seq number
           {
-            index++;
             if (radio.Data[i] >=48 && radio.Data[i]<=57)
               tmp = tmp*10+radio.Data[i]-48;
             else if (radio.Data[i]==':')
@@ -85,6 +84,7 @@ boolean HandleWirelessHEXData(RFM12B radio, byte remoteID, SPIFlash flash, boole
                 return false;
               else break;
             }
+            index++;
           }
 
           if (DEBUG) {
@@ -94,19 +94,22 @@ boolean HandleWirelessHEXData(RFM12B radio, byte remoteID, SPIFlash flash, boole
             PrintHex83((byte*)radio.Data, dataLen);
           }
 
-          if (radio.Data[index++] != ':') return false;
+          if (radio.Data[++index] != ':') return false;
           now = millis(); //got "good" packet
 
-          if (tmp==seq || tmp==seq-1) // if {temp==seq : new packet}, {temp==seq-1 : ACK was lost, host resending previously saved packet so must only resend the ACK}
+          if (tmp==seq)
           {
-            if (tmp==seq)
-            {
-              seq++;
-              for(byte i=index;i<dataLen;i++)
-                flash.writeByte(bytesFlashed++, radio.Data[i]);
-            }
+            for(byte i=index;i<dataLen;i++)
+              flash.writeByte(bytesFlashed++, radio.Data[i]);
 
             //send ACK
+            tmp = sprintf(buffer, "FLX:%u:OK", tmp);
+            if (DEBUG) Serial.println((char*)buffer);
+            radio.SendACK(buffer, tmp);
+            seq++;
+          }
+          else if (tmp==seq-1) //host resending the previous packet, just ACK back since it's already been saved
+          {
             tmp = sprintf(buffer, "FLX:%u:OK", tmp);
             if (DEBUG) Serial.println((char*)buffer);
             radio.SendACK(buffer, tmp);
@@ -229,7 +232,6 @@ boolean HandleSerialHEXData(RFM12B radio, byte targetID, uint16_t TIMEOUT, uint1
           byte index = 3;
           for (byte i = 4; i<8; i++) //up to 4 characters for seq number
           {
-            index++;
             if (input[i] >=48 && input[i]<=57)
               tmp = tmp*10+input[i]-48;
             else if (input[i]==':')
@@ -238,9 +240,10 @@ boolean HandleSerialHEXData(RFM12B radio, byte targetID, uint16_t TIMEOUT, uint1
                 return false;
               else break;
             }
+            index++;
           }
           //Serial.print("input[index] = ");Serial.print("[");Serial.print(index);Serial.print("]=");Serial.println(input[index]);
-          if (input[index++] != ':') return false;
+          if (input[++index] != ':') return false;
           now = millis(); //got good packet
           
           byte hexDataLen = validateHEXData(input+index, inputLen-index);
