@@ -50,7 +50,6 @@ boolean HandleWirelessHEXData(RFM12B radio, byte remoteID, SPIFlash flash, boole
   char buffer[16];
   int timeout = 3000; //3s for flash data
   uint16_t bytesFlashed=10;
-
   radio.SendACK("FLX?OK",6); //ACK the HANDSHAKE
   if (DEBUG) Serial.println("FLX?OK (ACK sent)");
 
@@ -96,20 +95,17 @@ boolean HandleWirelessHEXData(RFM12B radio, byte remoteID, SPIFlash flash, boole
 
           if (radio.Data[++index] != ':') return false;
           now = millis(); //got "good" packet
-
-          if (tmp==seq)
+          index++;
+          if (tmp==seq || tmp==seq-1) // if {temp==seq : new packet}, {temp==seq-1 : ACK was lost, host resending previously saved packet so must only resend the ACK}
           {
-            for(byte i=index;i<dataLen;i++)
-              flash.writeByte(bytesFlashed++, radio.Data[i]);
+            if (tmp==seq)
+            {
+              seq++;
+              for(byte i=index;i<dataLen;i++)
+                flash.writeByte(bytesFlashed++, radio.Data[i]);
+            }
 
             //send ACK
-            tmp = sprintf(buffer, "FLX:%u:OK", tmp);
-            if (DEBUG) Serial.println((char*)buffer);
-            radio.SendACK(buffer, tmp);
-            seq++;
-          }
-          else if (tmp==seq-1) //host resending the previous packet, just ACK back since it's already been saved
-          {
             tmp = sprintf(buffer, "FLX:%u:OK", tmp);
             if (DEBUG) Serial.println((char*)buffer);
             radio.SendACK(buffer, tmp);
@@ -121,7 +117,7 @@ boolean HandleWirelessHEXData(RFM12B radio, byte remoteID, SPIFlash flash, boole
           if (dataLen==4) //ACK for handshake was lost, resend
           {
             radio.SendACK("FLX?OK",6);
-            if (DEBUG) Serial.println("FLX?OK");
+            if (DEBUG) Serial.println("FLX?OK resend");
           }
           if (dataLen==7 && radio.Data[4]=='E' && radio.Data[5]=='O' && radio.Data[6]=='F') //Expected EOF
           {
@@ -174,7 +170,7 @@ boolean CheckForSerialHEX(byte* input, byte inputLen, RFM12B radio, byte targetI
   if (inputLen == 4 && input[0]=='F' && input[1]=='L' && input[2]=='X' && input[3]=='?') {
     if (HandleSerialHandshake(radio, targetID, false, TIMEOUT, ACKTIMEOUT, DEBUG))
     {
-      Serial.println("FLX?OK"); //signal serial handshake back to host script
+      Serial.println("\nFLX?OK"); //signal serial handshake back to host script
       if (HandleSerialHEXData(radio, targetID, TIMEOUT, ACKTIMEOUT, DEBUG))
       {
         Serial.println("FLX?OK"); //signal EOF serial handshake back to host script
@@ -190,10 +186,6 @@ boolean CheckForSerialHEX(byte* input, byte inputLen, RFM12B radio, byte targetI
 
 boolean HandleSerialHandshake(RFM12B radio, byte targetID, boolean isEOF, uint16_t TIMEOUT, uint16_t ACKTIMEOUT, boolean DEBUG)
 {
-  //temp
-  //return true;
-
-  byte retries = 3;
   long now = millis();
   
   while (millis()-now<TIMEOUT)
@@ -245,7 +237,7 @@ boolean HandleSerialHEXData(RFM12B radio, byte targetID, uint16_t TIMEOUT, uint1
           //Serial.print("input[index] = ");Serial.print("[");Serial.print(index);Serial.print("]=");Serial.println(input[index]);
           if (input[++index] != ':') return false;
           now = millis(); //got good packet
-          
+          index++;
           byte hexDataLen = validateHEXData(input+index, inputLen-index);
           if (hexDataLen>0)
           {

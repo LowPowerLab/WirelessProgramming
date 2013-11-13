@@ -95,7 +95,7 @@ boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolea
 
           if (radio.DATA[++index] != ':') return false;
           now = millis(); //got "good" packet
-
+          index++;
           if (tmp==seq || tmp==seq-1) // if {temp==seq : new packet}, {temp==seq-1 : ACK was lost, host resending previously saved packet so must only resend the ACK}
           {
             if (tmp==seq)
@@ -236,7 +236,7 @@ boolean HandleSerialHEXData(RFM69 radio, byte targetID, uint16_t TIMEOUT, uint16
           //Serial.print("input[index] = ");Serial.print("[");Serial.print(index);Serial.print("]=");Serial.println(input[index]);
           if (input[++index] != ':') return false;
           now = millis(); //got good packet
-          
+          index++;
           byte hexDataLen = validateHEXData(input+index, inputLen-index);
           if (hexDataLen>0)
           {
@@ -335,9 +335,6 @@ boolean sendHEXPacket(RFM69 radio, byte targetID, byte* sendBuf, byte hexDataLen
   
   while(1) {
     if (DEBUG) { Serial.print("RFTX > "); PrintHex83(sendBuf, hexDataLen); }
-
-    //radio.send(targetID, sendBuf, hexDataLen, true);
-    //if (waitForAck(radio, targetID, ACKTIMEOUT))
     if (radio.sendWithRetry(targetID, sendBuf, hexDataLen, 2, ACKTIMEOUT))
     {
       byte ackLen = radio.DATALEN;
