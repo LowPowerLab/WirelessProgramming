@@ -22,6 +22,7 @@ import re
 ### GENERAL SETTINGS ###
 SERIALPORT = "COM101"  # the default com/serial port the receiver is connected to
 BAUDRATE = 115200      # default baud rate we talk to Moteino
+TARGET=0
 DEBUG = False
 HEX = "flash.hex"
 retries = 2
@@ -29,26 +30,29 @@ retries = 2
 # Read command line arguments
 if (sys.argv and len(sys.argv) > 1):
   if len(sys.argv)==2 and sys.argv[1] == "-h":
-    print " -d               Set DEBUG=True"
-    print " -f               Set HEX file (Default: ", HEX, ")"
-    print " -s SPort         Read from serial port SPort (Default: ", SERIALPORT, ")"
-    print " -b Baud          Set serial port bit rate to Baud (Default: ", BAUDRATE, ")"
-    print " -h               Print this message"
+    #print " -d or -debug         Turn debugging ON (verbose output)"
+    print " -f or -file          HEX file to upload (Default: ", HEX, ")"
+    print " -t or -target {ID}   Specify WirelessProgramming node target"
+    print " -s or -serial {port} Specify serial port of WirelessProgramming gateway (Default: ", SERIALPORT, ")"
+    print " -b or -baud {baud}   Specify serial port baud rate (Default: ", BAUDRATE, ")"
+    print " -h or -help          Print this message"
     exit(0)
     
   for i in range(len(sys.argv)):
-    if sys.argv[i] == "-d":
-      DEBUG = True
-    if sys.argv[i] == "-s" and len(sys.argv) >= i+2:
+    #if sys.argv[i] == "-d" or sys.argv[i] == "-debug":
+    #  DEBUG = True
+    if (sys.argv[i] == "-s" or sys.argv[i] == "-serial") and len(sys.argv) >= i+2:
       SERIALPORT = sys.argv[i+1]
-    if sys.argv[i] == "-b" and len(sys.argv) >= i+2:
+    if (sys.argv[i] == "-b" or sys.argv[i] == "-baud") and len(sys.argv) >= i+2:
       BAUD = sys.argv[i+1]
-    if sys.argv[i] == "-f" and len(sys.argv) >= i+2:
+    if (sys.argv[i] == "-f" or sys.argv[i] == "-file") and len(sys.argv) >= i+2:
       HEX = sys.argv[i+1]
-
-# open up the FTDI serial port to get data transmitted to Moteino
-ser = serial.Serial(SERIALPORT, BAUDRATE, timeout=1) #timeout=0 means nonblocking
-time.sleep(2) #wait for Moteino reset after port open and potential bootloader time (~1.6s) 
+    if (sys.argv[i] == "-t" or sys.argv[i] == "-target") and len(sys.argv) >= i+2:
+      if sys.argv[i+1].isdigit() and int(sys.argv[i+1])>0 and int(sys.argv[i+1])<=255:
+        TARGET = int(sys.argv[i+1])
+      else:
+        print "TARGET invalid  (", sys.argv[i+1], "), must be 1-255."
+        exit(1)
 
 def millis():
   return int(round(time.time() * 1000)) 
@@ -57,7 +61,7 @@ def waitForHandshake(isEOF=False):
   now = millis()
   count = 0
   while True:
-    if millis()-now < 5000:
+    if millis()-now < 4000:
       count += 1
       if isEOF:
         ser.write("FLX?EOF" + '\n')
@@ -73,7 +77,22 @@ def waitForHandshake(isEOF=False):
           return True
     else: return False
 
-
+def waitForTargetSet(targetNode):
+  now = millis()
+  to = "TO:" + str(TARGET)
+  print to
+  ser.write(to + '\n')
+  ser.flush()
+  while True:
+    if millis()-now < 3000:
+      rx = ser.readline().rstrip()
+      if len(rx) > 0:
+        print "Moteino: [" + rx + "]"
+        if rx == to + ":OK":
+          return True
+        else: return False
+  return False
+    
 # return 0:timeout, 1:OK!, 2:match but out of synch
 def waitForSEQ(seq):
   now = millis()
@@ -94,6 +113,22 @@ def waitForSEQ(seq):
 # MAIN()
 if __name__ == "__main__":
   try:
+    # open up the FTDI serial port to get data transmitted to Moteino
+    ser = serial.Serial(SERIALPORT, BAUDRATE, timeout=1) #timeout=0 means nonblocking
+    time.sleep(2) #wait for Moteino reset after port open and potential bootloader time (~1.6s) 
+    ser.flushInput();
+    
+    if not 0<TARGET<= 255:
+      print "TARGET not provided (use -h for help), now exiting..."
+      exit(1)
+    
+    #send target ID first
+    if waitForTargetSet(TARGET):
+      print "TARGET SET OK"
+    else:
+      print "TARGET SET FAIL, exiting..."
+      exit(1)
+    
     with open(HEX) as f:
       print "File found, passing to Moteino..."
       
@@ -122,12 +157,14 @@ if __name__ == "__main__":
               continue
             else:
               print "TIMEOUT, aborting..."
-              exit(0);
+              exit(1);
 
         while 1:
           rx = ser.readline()
           if (len(rx) > 0): print rx.strip()
-      else: print "No response from Moteino, exiting..."
+      else:
+        print "No response from Moteino, exiting..."
+        exit(1);
 
   except IOError:
     print "File ", HEX, " not found, exiting..."
