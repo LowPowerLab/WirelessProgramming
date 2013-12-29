@@ -29,7 +29,7 @@ retries = 2
 
 # Read command line arguments
 if (sys.argv and len(sys.argv) > 1):
-  if len(sys.argv)==2 and sys.argv[1] == "-h":
+  if len(sys.argv)==2 and (sys.argv[1] == "-h" or sys.argv[1] == "-help"):
     #print " -d or -debug         Turn debugging ON (verbose output)"
     print " -f or -file          HEX file to upload (Default: ", HEX, ")"
     print " -t or -target {ID}   Specify WirelessProgramming node target"
