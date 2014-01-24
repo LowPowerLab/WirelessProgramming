@@ -12,6 +12,7 @@
  */
 
 #include <WirelessHEX69.h>
+#include <RFM69registers.h>
 #include <avr/wdt.h>
 
 /// Checks whether the last message received was a wireless programming request handshake
@@ -19,7 +20,7 @@
 /// store it on the external flash chip, then reboot
 /// Assumes radio has been initialized and has just received a message (is not in SLEEP mode, and you called CRCPass())
 /// Assumes flash is an external SPI flash memory chip that has been initialized
-void CheckForWirelessHEX(RFM69 radio, SPIFlash flash, boolean DEBUG)
+void CheckForWirelessHEX(RFM69 radio, SPIFlash flash, boolean DEBUG, byte LEDpin)
 {
   //special FLASH command, enter a FLASH image exchange sequence
   if (radio.DATALEN >= 4 && radio.DATA[0]=='F' && radio.DATA[1]=='L' && radio.DATA[2]=='X' && radio.DATA[3]=='?')
@@ -29,7 +30,11 @@ void CheckForWirelessHEX(RFM69 radio, SPIFlash flash, boolean DEBUG)
     { //sender must have not received EOF ACK so just resend
       radio.send(remoteID, "FLX?OK",6);
     }
-    else if (HandleWirelessHEXData(radio, remoteID, flash, DEBUG))
+#ifdef SHIFTCHANNEL
+    else if (HandleWirelessHEXDataWrapper(radio, remoteID, flash, DEBUG, LEDpin))
+#else
+    else if (HandleWirelessHEXData(radio, remoteID, flash, DEBUG, LEDpin))
+#endif
     {
       if (DEBUG) Serial.print("FLASH IMG TRANSMISSION SUCCESS!\n");
       resetUsingWatchdog(DEBUG);
@@ -43,12 +48,20 @@ void CheckForWirelessHEX(RFM69 radio, SPIFlash flash, boolean DEBUG)
   }
 }
 
-boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolean DEBUG) {
-  uint8_t c;
+#ifdef SHIFTCHANNEL
+boolean HandleWirelessHEXDataWrapper(RFM69 radio, byte remoteID, SPIFlash flash, boolean DEBUG, byte LEDpin) {
+  radio.writeReg(REG_FRFMSB, radio.readReg(REG_FRFMSB) + 1); //MSB+1 => shift freq up by 8Mhz
+  boolean result = HandleWirelessHEXData(radio, remoteID, flash, DEBUG, LEDpin);
+  radio.writeReg(REG_FRFMSB, radio.readReg(REG_FRFMSB) - 1); //MSB-1 => shift freq down by 8Mhz
+  return result;
+}
+#endif
+
+boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolean DEBUG, byte LEDpin) {
   long now=0;
-  uint16_t tmp,seq=0,len;
+  uint16_t tmp,seq=0;
   char buffer[16];
-  int timeout = 3000; //3s for flash data
+  uint16_t timeout = 3000; //3s for flash data
   uint16_t bytesFlashed=10;
   radio.sendACK("FLX?OK",6); //ACK the HANDSHAKE
   if (DEBUG) Serial.println("FLX?OK (ACK sent)");
@@ -138,7 +151,7 @@ boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolea
         }
       }
       #ifdef LED //blink!
-      pinMode(LED,OUTPUT); digitalWrite(LED,HIGH); delay(1); digitalWrite(LED,LOW);
+      pinMode(LEDpin,OUTPUT); digitalWrite(LEDpin,HIGH); delay(1); digitalWrite(LEDpin,LOW);
       #endif
     }
     
@@ -171,7 +184,11 @@ boolean CheckForSerialHEX(byte* input, byte inputLen, RFM69 radio, byte targetID
     if (HandleSerialHandshake(radio, targetID, false, TIMEOUT, ACKTIMEOUT, DEBUG))
     {
       Serial.println("\nFLX?OK"); //signal serial handshake back to host script
+#ifdef SHIFTCHANNEL
+      if (HandleSerialHEXDataWrapper(radio, targetID, TIMEOUT, ACKTIMEOUT, DEBUG))
+#else
       if (HandleSerialHEXData(radio, targetID, TIMEOUT, ACKTIMEOUT, DEBUG))
+#endif
       {
         Serial.println("FLX?OK"); //signal EOF serial handshake back to host script
         if (DEBUG) Serial.println("FLASH IMG TRANSMISSION SUCCESS");
@@ -201,6 +218,16 @@ boolean HandleSerialHandshake(RFM69 radio, byte targetID, boolean isEOF, uint16_
   if (DEBUG) Serial.println("Handshake fail");
   return false;
 }
+
+#ifdef SHIFTCHANNEL
+boolean HandleSerialHEXDataWrapper(RFM69 radio, byte targetID, uint16_t TIMEOUT, uint16_t ACKTIMEOUT, boolean DEBUG) {
+  radio.writeReg(REG_FRFMSB, radio.readReg(REG_FRFMSB) + 2); //MSB+2 => shift freq up by 8Mhz
+  boolean result = HandleSerialHEXData(radio, targetID, TIMEOUT, ACKTIMEOUT, DEBUG);
+  radio.writeReg(REG_FRFMSB, radio.readReg(REG_FRFMSB) - 2); //MSB-2 => shift freq down by 8Mhz
+  return result;
+}
+#endif
+
 
 boolean HandleSerialHEXData(RFM69 radio, byte targetID, uint16_t TIMEOUT, uint16_t ACKTIMEOUT, boolean DEBUG) {
   long now=millis();
@@ -356,17 +383,6 @@ boolean sendHEXPacket(RFM69 radio, byte targetID, byte* sendBuf, byte hexDataLen
       Serial.println("Timeout waiting for packet ACK, aborting FLASH operation ...");
       break; //abort FLASH sequence if no valid ACK was received for a long time
     }
-  }
-  return false;
-}
-
-// wait a few milliseconds for proper ACK to me, return true if indeed received
-boolean waitForAck(RFM69 radio, uint8_t fromNodeId, uint16_t ACKTIMEOUT)
-{
-  long now = millis();
-  while (millis() - now <= ACKTIMEOUT) {
-    if (radio.ACKReceived(fromNodeId))
-      return true;
   }
   return false;
 }

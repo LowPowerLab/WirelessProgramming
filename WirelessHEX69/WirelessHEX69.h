@@ -13,7 +13,8 @@
 
 #ifndef _WirelessHEX69_H_
 #define _WirelessHEX69_H_
-#define LED 9  //LED on digital pin 9
+#define LED 9 //LED by default on digital pin 9
+#define SHIFTCHANNEL //shift frequency of HEX transmission to keep original channel free of the intense traffic
 
 #ifndef DEFAULT_TIMEOUT
   #define DEFAULT_TIMEOUT 3000
@@ -27,14 +28,21 @@
 #include <SPIFlash.h>
 
 //functions used in the REMOTE node
-void CheckForWirelessHEX(RFM69 radio, SPIFlash flash, boolean DEBUG=false);
+void CheckForWirelessHEX(RFM69 radio, SPIFlash flash, boolean DEBUG=false, byte LEDpin=LED);
 void resetUsingWatchdog(boolean DEBUG=false);
-boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolean DEBUG=false);
+
+boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolean DEBUG=false, byte LEDpin=LED);
+#ifdef SHIFTCHANNEL
+boolean HandleWirelessHEXDataWrapper(RFM69 radio, byte remoteID, SPIFlash flash, boolean DEBUG=false, byte LEDpin=LED);
+#endif
 
 //functions used in the MAIN node
 boolean CheckForSerialHEX(byte* input, byte inputLen, RFM69 radio, byte targetID, uint16_t TIMEOUT=DEFAULT_TIMEOUT, uint16_t ACKTIMEOUT=ACK_TIMEOUT, boolean DEBUG=false);
 boolean HandleSerialHandshake(RFM69 radio, byte targetID, boolean isEOF, uint16_t TIMEOUT=DEFAULT_TIMEOUT, uint16_t ACKTIMEOUT=ACK_TIMEOUT, boolean DEBUG=false);
 boolean HandleSerialHEXData(RFM69 radio, byte targetID, uint16_t TIMEOUT=DEFAULT_TIMEOUT, uint16_t ACKTIMEOUT=ACK_TIMEOUT, boolean DEBUG=false);
+#ifdef SHIFTCHANNEL
+boolean HandleSerialHEXDataWrapper(RFM69 radio, byte targetID, uint16_t TIMEOUT=DEFAULT_TIMEOUT, uint16_t ACKTIMEOUT=ACK_TIMEOUT, boolean DEBUG=false);
+#endif
 boolean waitForAck(RFM69 radio, uint8_t fromNodeID, uint16_t ACKTIMEOUT=ACK_TIMEOUT);
 
 byte validateHEXData(void* data, byte length);
