@@ -6,9 +6,9 @@ Moteino Wireless Programming library
  * DEPENDS ON the two libraries mentioned above
  * Install all three of these libraries in your Arduino/libraries folder ([Arduino > Preferences] for location of Arduino folder)
  
- You will need a Moteino loaded with DualOptiboot bootloader (they all come with it except some early units).
+ You will need a Moteino loaded with DualOptiboot bootloader (they all come with it except some early R1 units).
  Depending which Moteino revision it is install the library you need in your Arduino/libraries folder:
- - for Moteino R2 (RFM12B transceiver) - copy WirelessHEX
- - for Moteino R3 (RFM69W/RFM69HW transceiver) - copy WirelessHEX69
+ - for Moteinos with RFM12B transceiver - use/copy WirelessHEX
+ - for Moteinos with RFM69W/RFM69HW/RFM69CW transceivers - use/copy WirelessHEX69
  
  Examples for how to wirelessly program Moteino are found under the RFM12B and RFM69 libraries.
