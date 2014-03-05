@@ -29,13 +29,13 @@ retries = 2
 
 # Read command line arguments
 if (sys.argv and len(sys.argv) > 1):
-  if len(sys.argv)==2 and (sys.argv[1] == "-h" or sys.argv[1] == "-help"):
+  if len(sys.argv)==2 and (sys.argv[1] == "-h" or sys.argv[1] == "-help" or sys.argv[1] == "?"):
     #print " -d or -debug         Turn debugging ON (verbose output)"
     print " -f or -file          HEX file to upload (Default: ", HEX, ")"
     print " -t or -target {ID}   Specify WirelessProgramming node target"
     print " -s or -serial {port} Specify serial port of WirelessProgramming gateway (Default: ", SERIALPORT, ")"
     print " -b or -baud {baud}   Specify serial port baud rate (Default: ", BAUDRATE, ")"
-    print " -h or -help          Print this message"
+    print " -h or -help or ?     Print this message"
     exit(0)
     
   for i in range(len(sys.argv)):
@@ -46,7 +46,7 @@ if (sys.argv and len(sys.argv) > 1):
     if (sys.argv[i] == "-b" or sys.argv[i] == "-baud") and len(sys.argv) >= i+2:
       BAUD = sys.argv[i+1]
     if (sys.argv[i] == "-f" or sys.argv[i] == "-file") and len(sys.argv) >= i+2:
-      HEX = sys.argv[i+1]
+      HEX = sys.argv[i+1].strip()
     if (sys.argv[i] == "-t" or sys.argv[i] == "-target") and len(sys.argv) >= i+2:
       if sys.argv[i+1].isdigit() and int(sys.argv[i+1])>0 and int(sys.argv[i+1])<=255:
         TARGET = int(sys.argv[i+1])
@@ -167,4 +167,4 @@ if __name__ == "__main__":
         exit(1);
 
   except IOError:
-    print "File ", HEX, " not found, exiting..."
+    print "File [", HEX, "] not found, exiting..."
