@@ -117,7 +117,11 @@ if __name__ == "__main__":
     ser = serial.Serial(SERIALPORT, BAUDRATE, timeout=1) #timeout=0 means nonblocking
     time.sleep(2) #wait for Moteino reset after port open and potential bootloader time (~1.6s) 
     ser.flushInput();
-    
+  except IOError as e:
+    print "COM Port [", SERIALPORT, "] not found, exiting..."
+    exit(1)
+  
+  try:
     if not 0<TARGET<= 255:
       print "TARGET not provided (use -h for help), now exiting..."
       exit(1)
