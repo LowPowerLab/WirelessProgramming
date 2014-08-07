@@ -75,6 +75,9 @@ def waitForHandshake(isEOF=False):
         if rx == "FLX?OK":
           print "HANDSHAKE OK!"
           return True
+        elif rx == "FLX?NOK":
+          print "HANDSHAKE NOK [IMG REFUSED BY TARGET]"
+          return False
     else: return False
 
 def waitForTargetSet(targetNode):
@@ -151,6 +154,9 @@ if __name__ == "__main__":
           elif waitForHandshake(True):
             print "SUCCESS!"
             exit(0);
+          else:
+            print "FAIL, IMG REFUSED BY TARGET (size exceeded? verify target MCU matches compiled target)"
+            exit(99);
 
           if result == 1: seq+=1
           elif result == 2: continue # out of synch, retry

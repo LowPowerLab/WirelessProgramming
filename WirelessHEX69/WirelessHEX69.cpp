@@ -41,8 +41,8 @@ void CheckForWirelessHEX(RFM69 radio, SPIFlash flash, boolean DEBUG, byte LEDpin
     }
     else
     {
-      if (DEBUG) Serial.print("Timeout, erasing written data ... ");
-      flash.blockErase32K(0); //clear any written data
+      if (DEBUG) Serial.print("Timeout/Error, erasing written data ... ");
+      //flash.blockErase32K(0); //clear any written data in first 32K block
       if (DEBUG) Serial.println("DONE");
     }
   }
@@ -115,7 +115,10 @@ boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolea
             {
               seq++;
               for(byte i=index;i<dataLen;i++)
+              {
                 flash.writeByte(bytesFlashed++, radio.DATA[i]);
+                if (bytesFlashed%32768==0) flash.blockErase32K(bytesFlashed);//erase subsequent 32K blocks (possible in case of atmega1284p)
+              }
             }
 
             //send ACK
@@ -134,14 +137,21 @@ boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolea
           }
           if (dataLen==7 && radio.DATA[4]=='E' && radio.DATA[5]=='O' && radio.DATA[6]=='F') //Expected EOF
           {
-            if ((bytesFlashed-10)>31744) {
-              if (DEBUG) Serial.println("IMG exceeds 31k");
-              
+#ifdef __AVR_ATmega1284P__
+            if ((bytesFlashed-10)>65526) { //max 65536 - 10 bytes (signature)
+              if (DEBUG) Serial.println("IMG exceeds 64k, refusing it");
+              radio.sendACK("FLX?NOK",7);
               return false; //just return, let MAIN timeout
             }
+#else //assuming atmega328p
+            if ((bytesFlashed-10)>31744) {
+              if (DEBUG) Serial.println("IMG exceeds 31k, refusing it");
+              radio.sendACK("FLX?NOK",7);
+              return false; //just return, let MAIN timeout
+            }
+#endif
             radio.sendACK("FLX?OK",6);
             if (DEBUG) Serial.println("FLX?OK");
-
             //save # of bytes written
             flash.writeByte(7,(bytesFlashed-10)>>8);
             flash.writeByte(8,(bytesFlashed-10));
@@ -211,6 +221,9 @@ boolean HandleSerialHandshake(RFM69 radio, byte targetID, boolean isEOF, uint16_
     {
       if (radio.DATALEN == 6 && radio.DATA[0]=='F' && radio.DATA[1]=='L' && radio.DATA[2]=='X' && 
           radio.DATA[3]=='?' && radio.DATA[4]=='O' && radio.DATA[5]=='K')
+        return true;
+      if (radio.DATALEN == 7 && radio.DATA[0]=='F' && radio.DATA[1]=='L' && radio.DATA[2]=='X' && 
+          radio.DATA[3]=='?' && radio.DATA[4]=='N' && radio.DATA[5]=='O' && radio.DATA[6]=='K')
         return true;
     }
   }
