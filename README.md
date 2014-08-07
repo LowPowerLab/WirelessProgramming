@@ -12,3 +12,10 @@ Moteino Wireless Programming library
  - for Moteinos with RFM69W/RFM69HW/RFM69CW transceivers - use/copy WirelessHEX69
  
  Examples for how to wirelessly program Moteino are found under the RFM12B and RFM69 libraries.
+
+###License
+Copyright (c) 2013 by Felix Rusu <felix@lowpowerlab.com>
+<br/>
+This library is free software; you can redistribute it and/or modify it under the terms of either the GNU General Public License version 2 or the GNU Lesser General Public License version 2.1, both as published by the Free Software Foundation.
+<br/>
+This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details
