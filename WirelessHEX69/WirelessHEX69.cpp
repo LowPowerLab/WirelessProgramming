@@ -254,9 +254,9 @@ boolean HandleSerialHandshake(RFM69 radio, byte targetID, boolean isEOF, uint16_
 
 #ifdef SHIFTCHANNEL
 boolean HandleSerialHEXDataWrapper(RFM69 radio, byte targetID, uint16_t TIMEOUT, uint16_t ACKTIMEOUT, boolean DEBUG) {
-  radio.writeReg(REG_FRFMSB, radio.readReg(REG_FRFMSB) + 2); //MSB+2 => shift freq up by 8Mhz
+  radio.setFrequency(radio.getFrequency() + SHIFTCHANNEL); //shift center freq by SHIFTCHANNEL amount
   boolean result = HandleSerialHEXData(radio, targetID, TIMEOUT, ACKTIMEOUT, DEBUG);
-  radio.writeReg(REG_FRFMSB, radio.readReg(REG_FRFMSB) - 2); //MSB-2 => shift freq down by 8Mhz
+  radio.setFrequency(radio.getFrequency() - SHIFTCHANNEL); //shift center freq by SHIFTCHANNEL amount
   return result;
 }
 #endif
