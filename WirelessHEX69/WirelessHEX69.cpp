@@ -1,16 +1,36 @@
-/*
- * Copyright (c) 2013 by Felix Rusu <felix@lowpowerlab.com>
- * Library for facilitating wireless programming using an RFM69 transceiver (get library at: https://github.com/LowPowerLab/RFM69)
- * and the SPI Flash memory library for arduino/moteino (get library at: http://github.com/LowPowerLab/SPIFlash)
- * DEPENDS ON the two libraries mentioned above
- * Install all three of these libraries in your Arduino/libraries folder ([Arduino > Preferences] for location of Arduino folder)
- *
- * This file is free software; you can redistribute it and/or modify
- * it under the terms of either the GNU General Public License version 2
- * or the GNU Lesser General Public License version 2.1, both as
- * published by the Free Software Foundation.
- */
-
+// **********************************************************************************
+// Library for facilitating wireless programming using an RFM69 transceiver (get library at: https://github.com/LowPowerLab/RFM69)
+// and the SPI Flash memory library for arduino/moteino (get library at: http://github.com/LowPowerLab/SPIFlash)
+// DEPENDS ON the two libraries mentioned above
+// Install all three of these libraries in your Arduino/libraries folder ([Arduino > Preferences] for location of Arduino folder)
+// **********************************************************************************
+// Copyright Felix Rusu, LowPowerLab.com
+// Library and code by Felix Rusu - felix@lowpowerlab.com
+// **********************************************************************************
+// License
+// **********************************************************************************
+// This program is free software; you can redistribute it 
+// and/or modify it under the terms of the GNU General    
+// Public License as published by the Free Software       
+// Foundation; either version 3 of the License, or        
+// (at your option) any later version.                    
+//                                                        
+// This program is distributed in the hope that it will   
+// be useful, but WITHOUT ANY WARRANTY; without even the  
+// implied warranty of MERCHANTABILITY or FITNESS FOR A   
+// PARTICULAR PURPOSE. See the GNU General Public        
+// License for more details.                              
+//                                                        
+// You should have received a copy of the GNU General    
+// Public License along with this program.
+// If not, see <http://www.gnu.org/licenses/>.
+//                                                        
+// Licence can be viewed at                               
+// http://www.gnu.org/licenses/gpl-3.0.txt
+//
+// Please maintain this license information along with authorship
+// and copyright notices in any redistribution of this code
+// **********************************************************************************
 #include <WirelessHEX69.h>
 #include <RFM69registers.h>
 #include <avr/wdt.h>
@@ -50,9 +70,9 @@ void CheckForWirelessHEX(RFM69 radio, SPIFlash flash, boolean DEBUG, byte LEDpin
 
 #ifdef SHIFTCHANNEL
 boolean HandleWirelessHEXDataWrapper(RFM69 radio, byte remoteID, SPIFlash flash, boolean DEBUG, byte LEDpin) {
-  radio.writeReg(REG_FRFMSB, radio.readReg(REG_FRFMSB) + 1); //MSB+1 => shift freq up by 8Mhz
+  radio.setFrequency(radio.getFrequency() + SHIFTCHANNEL); //shift center freq by SHIFTCHANNEL amount
   boolean result = HandleWirelessHEXData(radio, remoteID, flash, DEBUG, LEDpin);
-  radio.writeReg(REG_FRFMSB, radio.readReg(REG_FRFMSB) - 1); //MSB-1 => shift freq down by 8Mhz
+  radio.setFrequency(radio.getFrequency() - SHIFTCHANNEL); //restore center freq
   return result;
 }
 #endif

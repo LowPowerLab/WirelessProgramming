@@ -1,20 +1,44 @@
-/*
- * Copyright (c) 2013 by Felix Rusu <felix@lowpowerlab.com>
- * Library for facilitating wireless programming using an RFM69 transceiver (get library at: https://github.com/LowPowerLab/RFM69)
- * and the SPI Flash memory library for arduino/moteino (get library at: http://github.com/LowPowerLab/SPIFlash)
- * DEPENDS ON the two libraries mentioned above
- * Install all three of these libraries in your Arduino/libraries folder ([Arduino > Preferences] for location of Arduino folder)
- *
- * This file is free software; you can redistribute it and/or modify
- * it under the terms of either the GNU General Public License version 2
- * or the GNU Lesser General Public License version 2.1, both as
- * published by the Free Software Foundation.
- */
-
+// **********************************************************************************
+// Library for facilitating wireless programming using an RFM69 transceiver (get library at: https://github.com/LowPowerLab/RFM69)
+// and the SPI Flash memory library for arduino/moteino (get library at: http://github.com/LowPowerLab/SPIFlash)
+// DEPENDS ON the two libraries mentioned above
+// Install all three of these libraries in your Arduino/libraries folder ([Arduino > Preferences] for location of Arduino folder)
+// **********************************************************************************
+// Copyright Felix Rusu, LowPowerLab.com
+// Library and code by Felix Rusu - felix@lowpowerlab.com
+// **********************************************************************************
+// License
+// **********************************************************************************
+// This program is free software; you can redistribute it 
+// and/or modify it under the terms of the GNU General    
+// Public License as published by the Free Software       
+// Foundation; either version 3 of the License, or        
+// (at your option) any later version.                    
+//                                                        
+// This program is distributed in the hope that it will   
+// be useful, but WITHOUT ANY WARRANTY; without even the  
+// implied warranty of MERCHANTABILITY or FITNESS FOR A   
+// PARTICULAR PURPOSE. See the GNU General Public        
+// License for more details.                              
+//                                                        
+// You should have received a copy of the GNU General    
+// Public License along with this program.
+// If not, see <http://www.gnu.org/licenses/>.
+//                                                        
+// Licence can be viewed at                               
+// http://www.gnu.org/licenses/gpl-3.0.txt
+//
+// Please maintain this license information along with authorship
+// and copyright notices in any redistribution of this code
+// **********************************************************************************
 #ifndef _WirelessHEX69_H_
 #define _WirelessHEX69_H_
-#define LED 9 //LED by default on digital pin 9
-#define SHIFTCHANNEL //shift frequency of HEX transmission to keep original channel free of the intense traffic
+#ifdef __AVR_ATmega1284P__
+  #define LED           15 // Moteino MEGAs have LEDs on D15
+#else
+  #define LED           9 // Moteinos have LEDs on D9
+#endif
+#define SHIFTCHANNEL 4000000 //amount to shift frequency of HEX transmission to keep original channel free of the intense traffic
 
 #ifndef DEFAULT_TIMEOUT
   #define DEFAULT_TIMEOUT 3000
