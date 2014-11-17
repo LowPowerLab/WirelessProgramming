@@ -70,6 +70,7 @@ void CheckForWirelessHEX(RFM69 radio, SPIFlash flash, boolean DEBUG, byte LEDpin
 
 #ifdef SHIFTCHANNEL
 boolean HandleWirelessHEXDataWrapper(RFM69 radio, byte remoteID, SPIFlash flash, boolean DEBUG, byte LEDpin) {
+  radio.sendACK("FLX?OK",6); //ACK the HANDSHAKE
   radio.setFrequency(radio.getFrequency() + SHIFTCHANNEL); //shift center freq by SHIFTCHANNEL amount
   boolean result = HandleWirelessHEXData(radio, remoteID, flash, DEBUG, LEDpin);
   radio.setFrequency(radio.getFrequency() - SHIFTCHANNEL); //restore center freq
@@ -83,7 +84,9 @@ boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolea
   char buffer[16];
   uint16_t timeout = 3000; //3s for flash data
   uint16_t bytesFlashed=10;
+#ifndef SHIFTCHANNEL
   radio.sendACK("FLX?OK",6); //ACK the HANDSHAKE
+#endif
   if (DEBUG) Serial.println("FLX?OK (ACK sent)");
 
   //first clear the fist 32k block (dedicated to a new FLASH image)
