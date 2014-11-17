@@ -1,20 +1,43 @@
-#/*
-# * Copyright (c) 2013 by Felix Rusu <felix@lowpowerlab.com>
-# *
-# * This file is free software; you can redistribute it and/or modify
-# * it under the terms of either the GNU General Public License version 2
-# * or the GNU Lesser General Public License version 2.1, both as
-# * published by the Free Software Foundation.
-# */
-
+#**********************************************************************************
 # This script will handle the transmission of a compiled sketch in the
 # form of an INTEL HEX flash image to an attached gateway/master Moteino node,
 # for further wireless transmission to a target Moteino node that will receive it de-HEXified and
 # store it in external memory. Once received by the target (which is also loaded with a custom bootloader
 # capable of reading back that image) it will reset and reprogram itself with the new sketch
 #
-# EXAMPLE USAGE: WirelessProgramming.py -f FILE.hex -s COM100 -b 115200
-
+# EXAMPLE command line: python WirelessProgramming.py -f PathToFile.hex -s COM100 -t 123
+# where -t is the target ID of the Moteino you are programming
+# and -s is the serial port of the programmer Moteino (on linux/osx it is something like ttyAMA0)
+# To get the .hex file path go to Arduino>file>preferences and check the verbosity for compilation
+#   then you will get the path in the debug status area once the sketch compiles
+#**********************************************************************************
+# Copyright Felix Rusu, LowPowerLab.com
+# Library and code by Felix Rusu - felix@lowpowerlab.com
+#**********************************************************************************
+# License
+#**********************************************************************************
+# This program is free software; you can redistribute it 
+# and/or modify it under the terms of the GNU General    
+# Public License as published by the Free Software       
+# Foundation; either version 3 of the License, or        
+# (at your option) any later version.                    
+#                                                        
+# This program is distributed in the hope that it will   
+# be useful, but WITHOUT ANY WARRANTY; without even the  
+# implied warranty of MERCHANTABILITY or FITNESS FOR A   
+# PARTICULAR PURPOSE. See the GNU General Public        
+# License for more details.                              
+#                                                        
+# You should have received a copy of the GNU General    
+# Public License along with this program.
+# If not, see <http://www.gnu.org/licenses/>.
+#                                                        
+# Licence can be viewed at                               
+# http://www.gnu.org/licenses/gpl-3.0.txt
+#
+# Please maintain this license information along with authorship
+# and copyright notices in any redistribution of this code
+# **********************************************************************************
 import time, sys, serial
 import collections
 import re
