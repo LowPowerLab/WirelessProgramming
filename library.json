@@ -1,0 +1,13 @@
+{
+  "name": "WirelessHEX69",
+  "keywords": "rf, radio, RFM69, Moteino, wireless, wireless programming, LowPowerLab, spi",
+  "description": "Library for wirelessly programming Moteino boards that have RFM69W, RFM69HW, RFM69CW, RFM69HCW transceivers",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/LowPowerLab/WirelessProgramming.git"
+  },
+  "include": "WirelessHEX69"
+  "frameworks": "arduino",
+  "platforms": "atmelavr"
+}
