@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/LowPowerLab/WirelessProgramming.git"
   },
-  "include": "WirelessHEX69"
+  "include": "WirelessHEX69",
   "frameworks": "arduino",
   "platforms": "atmelavr"
 }
