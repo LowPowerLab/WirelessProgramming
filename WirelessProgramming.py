@@ -82,10 +82,8 @@ def millis():
 
 def waitForHandshake(isEOF=False):
   now = millis()
-  count = 0
   while True:
     if millis()-now < 4000:
-      count += 1
       if isEOF:
         ser.write("FLX?EOF" + '\n')
       else:
