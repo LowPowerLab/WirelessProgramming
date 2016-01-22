@@ -73,7 +73,7 @@ byte validateHEXData(void* data, byte length);
 byte prepareSendBuffer(char* hexdata, byte*buf, byte length, uint16_t seq);
 boolean sendHEXPacket(RFM69 radio, byte remoteID, byte* sendBuf, byte hexDataLen, uint16_t seq, uint16_t TIMEOUT=DEFAULT_TIMEOUT, uint16_t ACKTIMEOUT=ACK_TIMEOUT, boolean DEBUG=false);
 byte BYTEfromHEX(char MSB, char LSB);
-byte readSerialLine(char* input, char endOfLineChar=10, byte maxLength=64, uint16_t timeout=1000);
+byte readSerialLine(char* input, char endOfLineChar=10, byte maxLength=115, uint16_t timeout=1000);
 void PrintHex83(byte* data, byte length);
 
 #endif

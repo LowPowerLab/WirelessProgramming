@@ -71,23 +71,25 @@ void CheckForWirelessHEX(RFM69 radio, SPIFlash flash, boolean DEBUG, byte LEDpin
 #ifdef SHIFTCHANNEL
 boolean HandleWirelessHEXDataWrapper(RFM69 radio, byte remoteID, SPIFlash flash, boolean DEBUG, byte LEDpin) {
   radio.sendACK("FLX?OK",6); //ACK the HANDSHAKE
+  if (DEBUG) { Serial.println("FLX?OK (ACK sent)"); Serial.print("Shifting channel to "); Serial.println(radio.getFrequency() + SHIFTCHANNEL);}
   radio.setFrequency(radio.getFrequency() + SHIFTCHANNEL); //shift center freq by SHIFTCHANNEL amount
   boolean result = HandleWirelessHEXData(radio, remoteID, flash, DEBUG, LEDpin);
+  if (DEBUG) { Serial.print("UNShifting channel to "); Serial.println(radio.getFrequency() - SHIFTCHANNEL);}
   radio.setFrequency(radio.getFrequency() - SHIFTCHANNEL); //restore center freq
   return result;
 }
 #endif
 
 boolean HandleWirelessHEXData(RFM69 radio, byte remoteID, SPIFlash flash, boolean DEBUG, byte LEDpin) {
-  long now=0;
+  uint32_t now=0;
   uint16_t tmp,seq=0;
   char buffer[16];
   uint16_t timeout = 3000; //3s for flash data
   uint16_t bytesFlashed=10;
 #ifndef SHIFTCHANNEL
   radio.sendACK("FLX?OK",6); //ACK the HANDSHAKE
-#endif
   if (DEBUG) Serial.println("FLX?OK (ACK sent)");
+#endif
 
   //first clear the fist 32k block (dedicated to a new FLASH image)
   flash.blockErase32K(0);
@@ -269,8 +271,8 @@ boolean HandleSerialHEXData(RFM69 radio, byte targetID, uint16_t TIMEOUT, uint16
   long now=millis();
   uint16_t seq=0, tmp=0, inputLen;
   byte remoteID = radio.SENDERID; //save the remoteID as soon as possible
-  byte sendBuf[32];
-  char input[64];
+  byte sendBuf[57];
+  char input[115];
   //a FLASH record should not be more than 64 bytes: FLX:9999:10042000FF4FA591B4912FB7F894662321F48C91D6 
 
   while(1) {
@@ -301,6 +303,7 @@ boolean HandleSerialHEXData(RFM69 radio, byte targetID, uint16_t TIMEOUT, uint16
           now = millis(); //got good packet
           index++;
           byte hexDataLen = validateHEXData(input+index, inputLen-index);
+
           if (hexDataLen>0)
           {
             if (tmp==seq) //only read data when packet number is the next expected SEQ number
@@ -349,7 +352,7 @@ byte validateHEXData(void* data, byte length)
   if (length <12 || length%2!=0) return 0; //shortest possible intel data HEX record is 12 bytes
   //Serial.print("VAL > "); Serial.println((char*)input);
 
-  uint16_t checksum=0;
+  uint8_t checksum=0;
   //check valid HEX data and CRC
   for (byte i=0; i<length;i++)
   {
@@ -357,7 +360,7 @@ byte validateHEXData(void* data, byte length)
       return 0;
     if (i%2 && i<length-2) checksum+=BYTEfromHEX(input[i-1], input[i]);
   }
-  checksum=(checksum^0xFFFF)+1;
+  checksum=(checksum^0xFF)+1;
   
   //TODO : CHECK for address continuity (intel HEX addresses are big endian)
   
@@ -366,7 +369,7 @@ byte validateHEXData(void* data, byte length)
 
   //check CHECKSUM byte
   if (((byte)checksum) != BYTEfromHEX(input[length-2], input[length-1]))
-    return false;
+    return 0;
 
   byte dataLength = BYTEfromHEX(input[0], input[1]); //length of actual HEX flash data (usually 16bytes)
   //calculate record length
