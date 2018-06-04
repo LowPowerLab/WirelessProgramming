@@ -195,7 +195,7 @@ try:
   time.sleep(2) #wait for Programmer Moteino reset after port open and potential bootloader time (~1.6s) 
   ser.flushInput();
 except IOError as e:
-  LOGln("COM Port [", SERIALPORT, "] not found, exiting...")
+  LOGln("COM Port [" + SERIALPORT + "] not found, exiting...")
   exitNow(1)
 
 try:
