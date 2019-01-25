@@ -196,7 +196,7 @@ try:
   ser.flushInput();
 except IOError as e:
   LOGln("COM Port [" + SERIALPORT + "] not found, exiting...")
-  exitNow(1)
+  exit(1)
 
 try:
   if not 0<TARGET<= 255:
