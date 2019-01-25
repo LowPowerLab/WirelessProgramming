@@ -320,7 +320,7 @@ try:
       exit(1)
 
 except IOError:
-  LOGln("File [", HEX, "] not found, exiting...")
+  LOGln("File [" + HEX + "] not found, exiting...")
   exit(1)
   
 finally:
