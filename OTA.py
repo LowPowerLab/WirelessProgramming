@@ -71,7 +71,7 @@ if (sys.argv and len(sys.argv) > 1):
     if (sys.argv[i] == "-s" or sys.argv[i] == "-serial") and len(sys.argv) >= i+2:
       SERIALPORT = sys.argv[i+1]
     if (sys.argv[i] == "-b" or sys.argv[i] == "-baud") and len(sys.argv) >= i+2:
-      BAUD = sys.argv[i+1]
+      BAUDRATE = sys.argv[i+1]
     if (sys.argv[i] == "-f" or sys.argv[i] == "-file") and len(sys.argv) >= i+2:
       HEX = sys.argv[i+1].strip()
     if (sys.argv[i] == "-t" or sys.argv[i] == "-target") and len(sys.argv) >= i+2:
