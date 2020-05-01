@@ -248,7 +248,7 @@ try:
                 #need to sum: the previous checksum + address bytes of nextLine2 (to arrive at a correct final checksum of combined 3 lines
                 checksum += int(nextLine2[len(nextLine2)-2:len(nextLine2)], 16) + int(nextLine2[3:5], 16) + int(nextLine2[5:7], 16)
                 addressByte += int(nextLine2[1:3], 16)
-                hexDataToSend = ":" + ('%0*X' % (2,addressByte%256)) + hexDataToSend[3:len(hexDataToSend)-2] + nextLine[9:len(nextLine)-2] + nextLine2[9:len(nextLine)-2] + ('%0*X' % (2,checksum%256))
+                hexDataToSend = ":" + ('%0*X' % (2,addressByte%256)) + hexDataToSend[3:len(hexDataToSend)-2] + nextLine[9:len(nextLine)-2] + nextLine2[9:len(nextLine2)-2] + ('%0*X' % (2,checksum%256))
                 bundledLines=3
               #}
               else:
