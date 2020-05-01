@@ -192,7 +192,7 @@ try:
   ser = serial.Serial(SERIALPORT, BAUDRATE, timeout=1) #timeout=0 means nonblocking
   ser.setDTR(False)
   ser.setRTS(False)
-  time.sleep(2) #wait for Programmer Moteino reset after port open and potential bootloader time (~1.6s) 
+  time.sleep(4) #wait for Programmer Moteino reset after port open and potential bootloader time (~1.6s) 
   ser.flushInput();
 except IOError as e:
   LOGln("COM Port [" + SERIALPORT + "] not found, exiting...")
