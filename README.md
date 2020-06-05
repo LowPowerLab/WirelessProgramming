@@ -1,4 +1,4 @@
-![GUI v1.6](https://raw.githubusercontent.com/LowPowerLab/WirelessProgramming/master/OTAGUI.png)
+![GUI v2.0](https://raw.githubusercontent.com/LowPowerLab/WirelessProgramming/master/OTAGUI_v2.png)
 # Wireless Programming GUI for Moteinos (aka OTA programming)
 
 ## Note: This repository used to reside in the [RFM69 library](https://github.com/LowPowerLab/RFM69/tree/master/Examples/WirelessProgramming_OTA).
