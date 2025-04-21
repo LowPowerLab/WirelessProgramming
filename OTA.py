@@ -53,10 +53,15 @@ from sys import exit
 SERIALPORT = "COM100"  # the default com/serial port the receiver is connected to
 BAUDRATE = 115200      # default baud rate we talk to Moteino
 TARGET=0               # Node ID of the Target that is being OTA reflashed
+TARGET_MIN = 1         # Smallest valid target ID
+TARGET_MAX = 1023      # Largest valid target ID
 HEX = "flash.hex"      # the HEX file containing the new program for the Target
 LINESPERPACKET = 3     # HEX lines to send per RF packet (1,2 or 3)
 retries = 2
 DEBUG = False
+
+def targetValid(target):
+  return target >= TARGET_MIN and target <= TARGET_MAX
 
 # Read command line arguments
 if (sys.argv and len(sys.argv) > 1):
@@ -81,10 +86,10 @@ if (sys.argv and len(sys.argv) > 1):
     if (sys.argv[i] == "-f" or sys.argv[i] == "-file") and len(sys.argv) >= i+2:
       HEX = sys.argv[i+1].strip()
     if (sys.argv[i] == "-t" or sys.argv[i] == "-target") and len(sys.argv) >= i+2:
-      if sys.argv[i+1].isdigit() and int(sys.argv[i+1])>0 and int(sys.argv[i+1])<=255:
+      if sys.argv[i+1].isdigit() and targetValid(int(sys.argv[i+1])):
         TARGET = int(sys.argv[i+1])
       else:
-        print("TARGET invalid  (", sys.argv[i+1], "), must be 1-255.")
+        print("TARGET invalid  ({0}), must be {1}-{2}".format(sys.argv[i+1], TARGET_MIN, TARGET_MAX))
         exit(1)
     if (sys.argv[i] == "-l" or sys.argv[i] == "-lines") and len(sys.argv) >= i+2:
       if sys.argv[i+1].isdigit() and int(sys.argv[i+1])>0 and int(sys.argv[i+1])<=3:
@@ -205,7 +210,7 @@ except IOError as e:
   exit(1)
 
 try:
-  if not 0<TARGET<= 255:
+  if not targetValid(TARGET):
     LOGln("TARGET not provided (use -h for help), now exiting...")
     exit(1)
   
