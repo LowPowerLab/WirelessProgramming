@@ -130,7 +130,7 @@ def waitForHandshake(isEOF=False):
         serWriteln(ser, "FLX?")
         LOGln("FLX?")
       ser.flush()
-      rx = ser.readline().rstrip().upper()
+      rx = ser.readline().decode().rstrip().upper()
 
       if len(rx) > 0:
       #{
@@ -158,7 +158,7 @@ def waitForTargetSet(targetNode):
   #{
     if millis()-now < 3000:
     #{
-      rx = ser.readline().rstrip()
+      rx = ser.readline().decode().rstrip()
       if len(rx) > 0:
       #{
         LOGln("Moteino: [" + rx + "]")
@@ -175,7 +175,7 @@ def waitForSEQ(seq):
   now = millis()
   while True:
     if millis()-now < 3000:
-      rx = ser.readline().strip()
+      rx = ser.readline().decode().strip()
 
       if (rx.upper().startswith("RFTX >") or rx.upper().startswith("RFACK >")):
       #{
@@ -318,7 +318,7 @@ try:
 
       while 1:
       #{
-        rx = ser.readline()
+        rx = ser.readline().decode()
         if (len(rx) > 0): LOGln(rx.strip())
       #}
 
