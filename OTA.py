@@ -39,7 +39,7 @@
 # and copyright notices in any redistribution of this code
 # **********************************************************************************
 
-from __future__ import with_statement
+from __future__ import print_function, with_statement
 
 import time, sys, serial
 
@@ -60,12 +60,12 @@ DEBUG = False
 if (sys.argv and len(sys.argv) > 1):
   if len(sys.argv)==2 and (sys.argv[1] == "-h" or sys.argv[1] == "-help" or sys.argv[1] == "?"):
     #print " -d or -debug         Turn debugging ON (verbose output)"
-    print " -f or -file          HEX file to upload (Default: ", HEX, ")"
-    print " -t or -target {ID}   Specify WirelessProgramming node target"
-    print " -l or -lines {1,2,3} HEX lines per RF packet (Default: 3)"
-    print " -s or -serial {port} Specify serial port of WirelessProgramming gateway (Default: ", SERIALPORT, ")"
-    print " -b or -baud {baud}   Specify serial port baud rate (Default: ", BAUDRATE, ")"
-    print " -h or -help or ?     Print this message"
+    print(" -f or -file          HEX file to upload (Default: ", HEX, ")")
+    print(" -t or -target {ID}   Specify WirelessProgramming node target")
+    print(" -l or -lines {1,2,3} HEX lines per RF packet (Default: 3)")
+    print(" -s or -serial {port} Specify serial port of WirelessProgramming gateway (Default: ", SERIALPORT, ")")
+    print(" -b or -baud {baud}   Specify serial port baud rate (Default: ", BAUDRATE, ")")
+    print(" -h or -help or ?     Print this message")
     exit(0)
     
   for i in range(len(sys.argv)):
@@ -82,13 +82,13 @@ if (sys.argv and len(sys.argv) > 1):
       if sys.argv[i+1].isdigit() and int(sys.argv[i+1])>0 and int(sys.argv[i+1])<=255:
         TARGET = int(sys.argv[i+1])
       else:
-        print "TARGET invalid  (", sys.argv[i+1], "), must be 1-255."
+        print("TARGET invalid  (", sys.argv[i+1], "), must be 1-255.")
         exit(1)
     if (sys.argv[i] == "-l" or sys.argv[i] == "-lines") and len(sys.argv) >= i+2:
       if sys.argv[i+1].isdigit() and int(sys.argv[i+1])>0 and int(sys.argv[i+1])<=3:
         LINESPERPACKET = int(sys.argv[i+1])
       else:
-        print "LINESPERPACKET invalid  (", sys.argv[i+1], "), must be 1-3."
+        print("LINESPERPACKET invalid  (", sys.argv[i+1], "), must be 1-3.")
         exit(1)
   #}
 
@@ -326,7 +326,7 @@ try:
 except IOError:
   LOGln("File [" + HEX + "] not found, exiting...")
   exit(1)
-  
+
 finally:
-  #print 'FINALLY' + '\n'
+  #print('FINALLY' + '\n')
   ser.close()
