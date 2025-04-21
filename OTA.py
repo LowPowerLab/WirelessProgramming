@@ -16,23 +16,23 @@
 #**********************************************************************************
 # License
 #**********************************************************************************
-# This program is free software; you can redistribute it 
-# and/or modify it under the terms of the GNU General    
-# Public License as published by the Free Software       
-# Foundation; either version 3 of the License, or        
-# (at your option) any later version.                    
-#                                                        
-# This program is distributed in the hope that it will   
-# be useful, but WITHOUT ANY WARRANTY; without even the  
-# implied warranty of MERCHANTABILITY or FITNESS FOR A   
-# PARTICULAR PURPOSE. See the GNU General Public        
-# License for more details.                              
-#                                                        
-# You should have received a copy of the GNU General    
+# This program is free software; you can redistribute it
+# and/or modify it under the terms of the GNU General
+# Public License as published by the Free Software
+# Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General
 # Public License along with this program.
 # If not, see <http://www.gnu.org/licenses/>.
-#                                                        
-# Licence can be viewed at                               
+#
+# Licence can be viewed at
 # http://www.gnu.org/licenses/gpl-3.0.txt
 #
 # Please maintain this license information along with authorship
@@ -41,7 +41,6 @@
 
 from __future__ import print_function, with_statement
 
-import collections
 import re
 import serial
 import sys
@@ -76,7 +75,7 @@ if (sys.argv and len(sys.argv) > 1):
     print(" -b or -baud {baud}   Specify serial port baud rate (Default: ", BAUDRATE, ")")
     print(" -h or -help or ?     Print this message")
     exit(0)
-    
+
   for i in range(len(sys.argv)):
   #{
     #if sys.argv[i] == "-d" or sys.argv[i] == "-debug":
@@ -106,10 +105,10 @@ def LOG(message):
 
 def LOGln(message):
   sys.stdout.write('\n' + message)
-  
+
 def millis():
   return int(round(time.time() * 1000))
-  
+
 def serWriteln(ser, msg):
   #ser.write(msg + '\n')
   ser.write(bytes((msg+'\n').encode('utf-8')))
@@ -117,7 +116,7 @@ def serWriteln(ser, msg):
 HANDSHAKE_OK            = 0
 HANDSHAKE_FAIL          = 1
 HANDSHAKE_FAIL_TIMEOUT  = 2
-HANDSHAKE_ERROR         = 3
+HANDSHAKE_FAIL_ERROR    = 3
 
 def waitForHandshake(isEOF=False):
   now = millis()
@@ -146,7 +145,8 @@ def waitForHandshake(isEOF=False):
           return HANDSHAKE_FAIL_ERROR
       #}
     #}
-    else: return HANDSHAKE_FAIL_TIMEOUT
+    else:
+      return HANDSHAKE_FAIL_TIMEOUT
 
 def waitForTargetSet(targetNode):
   now = millis()
@@ -164,7 +164,8 @@ def waitForTargetSet(targetNode):
         LOGln("Moteino: [" + rx + "]")
         if rx == to + ":OK":
           return True
-        else: return False
+        else:
+          return False
       #}
     #}
   #}
@@ -189,25 +190,28 @@ def waitForSEQ(seq):
         pattern = "FLX:([0-9]*):OK"
         LOG(" RX > " + rx)
         result = re.match(pattern, rx)
-        if result != None:
+        if result is not None:
           if int(result.group(1)) == seq:
             return 1
-          else: return 2
-        else: LOGln("Programmer reply '"+rx+"' does not match expected pattern: '"+pattern+"'")
+          else:
+            return 2
+        else:
+          LOGln("Programmer reply '"+rx+"' does not match expected pattern: '"+pattern+"'")
       #}
-    else: return 0
+    else:
+      return 0
 
 # MAIN()
 #if __name__ == "__main__":
 try:
-  start = millis();
+  start = millis()
   # open up the serial port to get data transmitted to Programmer Moteino
   ser = serial.Serial(SERIALPORT, BAUDRATE, timeout=1) #timeout=0 means nonblocking
   ser.setDTR(False)
   ser.setRTS(False)
-  time.sleep(4) #wait for Programmer Moteino reset after port open and potential bootloader time (~1.6s) 
-  ser.flushInput();
-except IOError as e:
+  time.sleep(4) #wait for Programmer Moteino reset after port open and potential bootloader time (~1.6s)
+  ser.flushInput()
+except IOError:
   LOGln("COM Port [" + SERIALPORT + "] not found, exiting...")
   exit(1)
 
@@ -215,17 +219,17 @@ try:
   if not targetValid(TARGET):
     LOGln("TARGET not provided (use -h for help), now exiting...")
     exit(1)
-  
+
   #send target ID first
   if waitForTargetSet(TARGET):
     LOGln("TARGET SET OK")
   else:
     LOGln("TARGET SET FAIL, exiting...")
     exit(1)
-  
+
   with open(HEX) as f:
     LOGln("File found, passing to Moteino OTA Programmer...")
-    
+
     handshakeResponse = waitForHandshake()
     if (handshakeResponse == HANDSHAKE_OK):
       seq = 0
@@ -238,8 +242,8 @@ try:
         isEOF = (content[seq].strip() == ":00000001FF") #this should be the last line in any valid intel HEX file
         result = -1
         bundledLines = 1
-        
-        if isEOF==False:
+
+        if not isEOF:
         #{
           hexDataToSend = currentLine
 
@@ -253,7 +257,7 @@ try:
               #need to sum: the 2 lines checksums + address bytes of nextLine (to arrive at a correct final checksum of combined 2 lines
               checksum = int(currentLine[len(currentLine)-2:len(currentLine)], 16) + int(nextLine[len(nextLine)-2:len(nextLine)], 16) + int(nextLine[3:5], 16) + int(nextLine[5:7], 16)
               addressByte = int(currentLine[1:3], 16) + int(nextLine[1:3], 16)
-              
+
               #check if a third line != EOF, so we can bundle 3 lines
               nextLine2 = content[seq+2].strip()
               if LINESPERPACKET==3 and nextLine2 != ":00000001FF" and nextLine2[7:9] == "00":
@@ -267,7 +271,7 @@ try:
               else:
               #{
                 hexDataToSend = ":" + ('%0*X' % (2,addressByte%256)) + hexDataToSend[3:len(hexDataToSend)-2] + nextLine[9:len(nextLine)-2] + ('%0*X' % (2,checksum%256))
-                bundledLines=2;
+                bundledLines=2
               #}
             #}
           #}
@@ -279,7 +283,7 @@ try:
         elif waitForHandshake(True) == HANDSHAKE_OK:
         #{
           LOGln("SUCCESS! (time elapsed: " + ("%.2f" % ((millis()-start)/1000.0)) + "s)")
-          exit(0);
+          exit(0)
         #}
         else:
         #{
@@ -319,14 +323,15 @@ try:
       while 1:
       #{
         rx = ser.readline().decode()
-        if (len(rx) > 0): LOGln(rx.strip())
+        if (len(rx) > 0):
+          LOGln(rx.strip())
       #}
 
     elif (handshakeResponse == HANDSHAKE_FAIL_TIMEOUT):
-      LOGln("FAIL: No response from Moteino programmer, is it connected to " + port)
+      LOGln("FAIL: No response from Moteino programmer, is it connected to " + SERIALPORT)
       exit(1)
     elif (handshakeResponse == HANDSHAKE_FAIL_TIMEOUT):
-      LOGln("FAIL: No response from Moteino programmer, is it connected to " + port)
+      LOGln("FAIL: No response from Moteino programmer, is it connected to " + SERIALPORT)
       exit(1)
     else:
       LOGln("FAIL: No response from Moteino Target, is Target listening on same Freq/NetworkID & OTA enabled?")
