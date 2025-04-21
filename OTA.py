@@ -38,7 +38,11 @@
 # Please maintain this license information along with authorship
 # and copyright notices in any redistribution of this code
 # **********************************************************************************
+
+from __future__ import with_statement
+
 import time, sys, serial
+
 import collections
 import re
 from sys import exit
