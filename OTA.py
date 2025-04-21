@@ -41,10 +41,12 @@
 
 from __future__ import print_function, with_statement
 
-import time, sys, serial
-
 import collections
 import re
+import serial
+import sys
+import time
+
 from sys import exit
 
 ### GENERAL SETTINGS ###
