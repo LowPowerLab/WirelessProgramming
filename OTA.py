@@ -57,6 +57,8 @@ TARGET_MIN = 1         # Smallest valid target ID
 TARGET_MAX = 1023      # Largest valid target ID
 HEX = "flash.hex"      # the HEX file containing the new program for the Target
 LINESPERPACKET = 3     # HEX lines to send per RF packet (1,2 or 3)
+LINESPERPACKET_MIN = 1 # Smallest valid HEX lines to send per RF packet
+LINESPERPACKET_MAX = 3 # Largest valid HEX lines to send per RF packet
 retries = 2
 DEBUG = False
 
@@ -92,10 +94,10 @@ if (sys.argv and len(sys.argv) > 1):
         print("TARGET invalid  ({0}), must be {1}-{2}".format(sys.argv[i+1], TARGET_MIN, TARGET_MAX))
         exit(1)
     if (sys.argv[i] == "-l" or sys.argv[i] == "-lines") and len(sys.argv) >= i+2:
-      if sys.argv[i+1].isdigit() and int(sys.argv[i+1])>0 and int(sys.argv[i+1])<=3:
+      if sys.argv[i+1].isdigit() and int(sys.argv[i+1])>=LINESPERPACKET_MIN and int(sys.argv[i+1])<=LINESPERPACKET_MAX:
         LINESPERPACKET = int(sys.argv[i+1])
       else:
-        print("LINESPERPACKET invalid  (", sys.argv[i+1], "), must be 1-3.")
+        print("LINESPERPACKET invalid  ({0}), must be {1}-{2}.".format(sys.argv[i+1], LINESPERPACKET_MIN, LINESPERPACKET_MAX))
         exit(1)
   #}
 
