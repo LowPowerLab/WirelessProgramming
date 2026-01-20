@@ -1,0 +1,6 @@
+Improve WirelessProgramming.py Python program.
+WirelessProgramming.py is used to send new sketches wirelessly to remote Moteinos.
+
+New features:
+* New "-i" command line argument to specify ID of target Moteino.
+* New "-l" command line option to get list of connected Moteinos.
